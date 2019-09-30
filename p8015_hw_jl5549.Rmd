@@ -8,6 +8,7 @@ knitr::opts_chunk$set(echo = TRUE)
 library(readxl)
 library(tidyverse)
 library(tidyr)
+library(dplyr)
 ```
 
 Problem 1
@@ -42,24 +43,61 @@ prcp_2018 =
 
 #combine two datasets
 prcp = 
-  rbind(prcp_2017, prcp_2018) 
+  rbind(prcp_2017, prcp_2018) %>% 
+  mutate(month = month.name[as.integer(month)])
 
-#convert month to character variable
-for(r in c(1:nrow(prcp))){
-  {for(n in c(1:12)) 
-    {
-    if (!is.na(prcp$month[r]) & prcp$month[r] == n)  
-      {prcp$month[r] = month.name[n]}
-    else if (is.na(prcp$month[r])) 
-      {prcp$month[r] = 'total'}
-    else
-    {n = n + 1}
-  }
-  }
-  {r = r + 1}
-}
 
 ```
 
 The maximum of trash dumpster collected one day is `r {max(mr_trash_wheel$weight_tons)}` tons. The maximum of trash dumpster collected one day is `r {min(mr_trash_wheel$weight_tons)}` tons. The total numbers of plastic bottles collected in 2015 is `r {sum(subset(mr_trash_wheel, year == 2015)$plastic_bottles)}`. The maximum of precipitation in 2017 is `r {max(subset(prcp, year =='2017' & month != 'total')$total)}`. The total precipitation in 2018 is `r {sum(subset(prcp, year =='2018' & month != 'total')$total)}`. The median number of sports balls in a dumpster in 2017 is `r {median(subset(mr_trash_wheel, year = '2017')$sports_balls)}`.
+
+Problem 2
+
+```{r}
+#import pols-month dataset
+plos_month = read_csv(file = './data/fivethirtyeight_datasets/pols-month.csv') %>% 
+  janitor::clean_names() %>% 
+  separate(mon, c('year','month','day'), sep = '-', convert = TRUE) %>% 
+  
+#create a president variable taking values gop and dem
+#remove prez_dem, prez_gop and day
+  mutate(month = month.name[as.integer(month)],
+         president = replace(prez_gop, prez_gop == '1', 'gop'),
+        president = replace(president, president == '0', 'dem')) %>% 
+  select(-prez_gop, -prez_dem, -day) 
+
+```
+
+```{r} 
+#import snp.csv dataset
+#clean the data in snp.csv using a similar process to the above.
+snp = read_csv(file = './data/fivethirtyeight_datasets/snp.csv') %>% 
+  janitor::clean_names() %>% 
+  separate(date, into = c('month', 'day', 'year'), sep = '/') %>% 
+  select(-day, year, month, everything()) %>% 
+  arrange(month,year) %>% 
+  mutate(month = month.name[as.integer(month)],
+    year = as.integer(year))
+
+
+
+```
+
+```{r}
+#import snp.csv dataset
+unemployment = read_csv(file = './data/fivethirtyeight_datasets/unemployment.csv') %>% 
+  janitor::clean_names() %>% 
+  pivot_longer(jan:dec, names_to = 'month', values_to = 'unemployment') %>% 
+  mutate(year = as.integer(year))
+
+```
+
+```{r}
+#join datasets
+merged_data = full_join(plos_month, snp, by = "year") %>% 
+  full_join(unemployment, by = 'year')
+
+```
+ 
+The first dataset plos_month contains datas from 1947 to 2015. It contains `r {nrow(plos_month)}`  rows and `r {ncol(plos_month)}` variables related to the number of national politicians who are democratic or republican at any given time. The president variable indicate whether the president was republican or democratic on the associated date.  The second dataset snp contains datas from 1950 to 2014. It contains `r {nrow(snp)}` rows and `r {ncol(snp)}` variables related to representative measure of stock market as a whole. The date variable is the date of the observation. The close variable is the closing values of the S&P stock index on the associated date. The second dataset unemployment contains datas from 1948 to 2015. It contains `r {nrow(unemployment)}` rows and `r {ncol(unemployment)}` variables to indicate the employment rate on a specific date. The last dataset is a merged on by the three above which shows comprehensive information related to election of the associated year.  It contains `r {nrow(merged_data)}` rows and `r {ncol(merged_data)}` variables
 
