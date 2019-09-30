@@ -46,7 +46,6 @@ prcp =
   rbind(prcp_2017, prcp_2018) %>% 
   mutate(month = month.name[as.integer(month)])
 
-
 ```
 
 The maximum of trash dumpster collected one day is `r {max(mr_trash_wheel$weight_tons)}` tons. The maximum of trash dumpster collected one day is `r {min(mr_trash_wheel$weight_tons)}` tons. The total numbers of plastic bottles collected in 2015 is `r {sum(subset(mr_trash_wheel, year == 2015)$plastic_bottles)}`. The maximum of precipitation in 2017 is `r {max(subset(prcp, year =='2017' & month != 'total')$total)}`. The total precipitation in 2018 is `r {sum(subset(prcp, year =='2018' & month != 'total')$total)}`. The median number of sports balls in a dumpster in 2017 is `r {median(subset(mr_trash_wheel, year = '2017')$sports_balls)}`.
@@ -80,7 +79,6 @@ snp = read_csv(file = './data/fivethirtyeight_datasets/snp.csv') %>%
     year = as.integer(year))
 
 
-
 ```
 
 ```{r}
@@ -100,4 +98,41 @@ merged_data = full_join(plos_month, snp, by = "year") %>%
 ```
  
 The first dataset plos_month contains datas from 1947 to 2015. It contains `r {nrow(plos_month)}`  rows and `r {ncol(plos_month)}` variables related to the number of national politicians who are democratic or republican at any given time. The president variable indicate whether the president was republican or democratic on the associated date.  The second dataset snp contains datas from 1950 to 2014. It contains `r {nrow(snp)}` rows and `r {ncol(snp)}` variables related to representative measure of stock market as a whole. The date variable is the date of the observation. The close variable is the closing values of the S&P stock index on the associated date. The second dataset unemployment contains datas from 1948 to 2015. It contains `r {nrow(unemployment)}` rows and `r {ncol(unemployment)}` variables to indicate the employment rate on a specific date. The last dataset is a merged on by the three above which shows comprehensive information related to election of the associated year.  It contains `r {nrow(merged_data)}` rows and `r {ncol(merged_data)}` variables
+
+Problem 3
+```{r}
+#import dataset
+#convert string variables to lower case
+#remove duplicate rows
+baby_names = read_csv(file = './data//Popular_Baby_Names.csv') %>% 
+  janitor::clean_names() %>% 
+  mutate(childs_first_name = str_to_lower(childs_first_name),
+          ethnicity = str_to_lower(ethnicity), 
+         gender = str_to_lower(gender)) %>% 
+  distinct()
+baby_names
+```
+
+```{r}
+#the rank of “Olivia” over time
+olivia = subset(baby_names, childs_first_name == 'olivia', 
+                select =c(year_of_birth, ethnicity, rank)) %>% 
+  pivot_wider(names_from = 'year_of_birth', values_from = 'rank')
+
+#the most popular male children name over time
+male_popular = subset(baby_names, rank == '1' & gender == 'male',
+                      select =c(year_of_birth, ethnicity, childs_first_name)) %>% 
+  pivot_wider(names_from = 'year_of_birth', values_from = 'childs_first_name')
+
+```
+
+```{r}
+# scatter plot showing the number of children with a name against the rank in popularity of that name
+non_hispanic = subset(baby_names, ethnicity!='hispanic' & gender == 'male' & year_of_birth == '2016', 
+       select = c(childs_first_name, rank, count))
+ggplot(non_hispanic, aes(x = rank, y = count))+
+  geom_point(color = 'pink')
+
+
+```
 
