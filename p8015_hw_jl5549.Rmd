@@ -72,7 +72,7 @@ plos_month = read_csv(file = './data/fivethirtyeight_datasets/pols-month.csv') %
          president = replace(prez_gop, prez_gop == '1', 'gop'),
         president = replace(president, president == '0', 'dem')) %>% 
   select(-prez_gop, -prez_dem, -day) 
-
+head(plos_month)
 ```
 
 ```{r} 
@@ -85,7 +85,7 @@ snp = read_csv(file = './data/fivethirtyeight_datasets/snp.csv') %>%
   mutate(month = month.name[as.integer(month)],
     year = as.integer(year)) %>% 
   arrange(year, month)
-
+head(snp)
 ```
 
 ```{r}
@@ -95,14 +95,14 @@ unemployment = read_csv(file = './data/fivethirtyeight_datasets/unemployment.csv
   pivot_longer(jan:dec, names_to = 'month', values_to = 'unemployment') %>% 
   mutate(month = as.character(factor(month, labels = month.name)),
          year = as.integer(year))
-
+head(unemployment)
 ```
 
 ```{r}
 #join datasets
 merged_data = full_join(plos_month, snp, by = "year") %>% 
   full_join(unemployment, by = 'year')
-
+head(merged_data)
 ```
  
 The first dataset plos_month contains datas from 1947 to 2015. It contains `r {nrow(plos_month)}`  rows and `r {ncol(plos_month)}` variables related to the number of national politicians who are democratic or republican at any given time. The president variable indicate whether the president was republican or democratic on the associated date. The variable gov_gop is the number of republican governors on the associated date. The variable sen_gop is the number of republican senators on the associated date. The variable rep_gop is the number of republican representatives on the associated date. The variable gov_dem is the number of democratic governors on the associated date. The variable sen_dem is the number of democratic senators on the associated date. The variable rep_dem is the number of democratic representatives on the associated date.
@@ -128,7 +128,7 @@ baby_names = read_csv(file = './data//Popular_Baby_Names.csv') %>%
           ) %>%
   select(-first_letter) %>% 
   distinct()
-
+head(baby_names)
 ```
 
 ```{r}
@@ -136,12 +136,12 @@ baby_names = read_csv(file = './data//Popular_Baby_Names.csv') %>%
 olivia = subset(baby_names, childs_first_name == 'Olivia', 
                 select =c(year_of_birth, ethnicity, rank)) %>% 
   pivot_wider(names_from = 'year_of_birth', values_from = 'rank')
-
+olivia
 #the most popular male children name over time
 male_popular = subset(baby_names, rank == '1' & gender == 'MALE',
                       select =c(year_of_birth, ethnicity, childs_first_name)) %>% 
   pivot_wider(names_from = 'year_of_birth', values_from = 'childs_first_name')
-
+male_popular
 ```
 
 ```{r}
